@@ -1,0 +1,30 @@
+# Bar Monitoring System - Python Dependencies
+
+# Hailo Integration
+# NOTE: Hailo software must be installed separately via:
+# sudo apt install hailo-all
+# Then clone hailo-rpi5-examples and run ./install.sh
+
+# Core dependencies
+numpy>=1.21.0
+opencv-python>=4.5.0
+PyYAML>=6.0
+
+# GStreamer Python bindings (for Hailo pipeline)
+PyGObject>=3.42.0
+
+# Database
+# sqlite3 is built into Python
+
+# Sensors (will add in next phase)
+# Adafruit-DHT>=1.4.0        # Temperature sensor
+# adafruit-circuitpython-bh1750  # Lux sensor
+# pyaudio>=0.2.11            # Audio input
+# pybluez>=0.23              # Bluetooth scanning
+
+# Web interface (optional - for dashboard)
+# flask>=2.0.0
+# flask-socketio>=5.0.0
+
+# Utilities
+python-dateutil>=2.8.0
