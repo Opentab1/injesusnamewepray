@@ -85,3 +85,19 @@ display:
   
   # Show FPS counter
   show_fps: true
+
+# Toast POS Integration (OPTIONAL - for revenue tracking)
+toast_pos:
+  # Enable Toast POS integration
+  enabled: false
+  
+  # Toast API Credentials (get from https://developers.toasttab.com/)
+  client_id: ''  # Your Toast API Client ID
+  client_secret: ''  # Your Toast API Client Secret
+  restaurant_guid: ''  # Your Restaurant GUID
+  
+  # How often to sync orders (seconds)
+  sync_interval: 60
+  
+  # Link orders to customers within this time window (seconds)
+  order_matching_window: 300  # 5 minutes

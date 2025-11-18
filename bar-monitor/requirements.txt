@@ -28,3 +28,6 @@ flask-cors>=3.0.10
 
 # Utilities
 python-dateutil>=2.8.0
+
+# API integrations (for Toast POS)
+requests>=2.28.0
