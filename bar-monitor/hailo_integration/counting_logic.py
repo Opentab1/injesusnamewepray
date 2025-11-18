@@ -248,7 +248,7 @@ class EntryExitCounter:
     """
     
     def __init__(self, counting_line_y: int, frame_height: int = 480,
-                 entry_direction: str = 'down'):
+                 entry_direction: str = 'down', dwell_tracker=None):
         """
         Initialize counter.
         
@@ -257,10 +257,12 @@ class EntryExitCounter:
             frame_height: Height of video frame in pixels
             entry_direction: 'down' if entering means moving down in frame,
                            'up' if entering means moving up
+            dwell_tracker: Optional DwellTimeTracker instance for tracking visit duration
         """
         self.counting_line_y = counting_line_y
         self.frame_height = frame_height
         self.entry_direction = entry_direction
+        self.dwell_tracker = dwell_tracker
         
         self.tracker = CentroidTracker(max_disappeared=30, max_distance=50)
         
@@ -273,7 +275,8 @@ class EntryExitCounter:
         self.track_states = {}  # track_id -> 'above' or 'below' line
         
         logger.info(f"EntryExitCounter initialized: line_y={counting_line_y}, "
-                   f"entry_direction={entry_direction}")
+                   f"entry_direction={entry_direction}, "
+                   f"dwell_tracking={'enabled' if dwell_tracker else 'disabled'}")
     
     def update(self, detections: List[Tuple[int, int]]) -> Tuple[int, int]:
         """
@@ -341,6 +344,14 @@ class EntryExitCounter:
                 # Mark as crossed
                 track.crossed_line = True
                 track.direction = direction
+                
+                # Notify dwell tracker if enabled
+                if self.dwell_tracker:
+                    from datetime import datetime
+                    if direction == 'entry':
+                        self.dwell_tracker.record_entry(track_id, datetime.now())
+                    elif direction == 'exit':
+                        self.dwell_tracker.record_exit(track_id, datetime.now())
                 
                 logger.info(f"Track {track_id}: {direction} detected "
                           f"(Occupancy: {self.current_occupancy})")

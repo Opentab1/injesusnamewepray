@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from hailo_integration.hailo_runner import HailoRunner
 from hailo_integration.counting_logic import EntryExitCounter
 from hailo_integration.occupancy_tracker import OccupancyTracker
+from hailo_integration.dwell_time_tracker import DwellTimeTracker
 
 
 class BarMonitorSystem:
@@ -56,6 +57,7 @@ class BarMonitorSystem:
         self.hailo_runner = None
         self.counter = None
         self.tracker = None
+        self.dwell_tracker = None
         self.running = False
         
         # Setup signal handlers for graceful shutdown
@@ -122,17 +124,27 @@ class BarMonitorSystem:
             hailo_info = self.hailo_runner.get_hailo_info()
             self.logger.info(f"Hailo Device: {hailo_info.get('output', 'Unknown')}")
             
-            # 2. Initialize Entry/Exit Counter
-            self.logger.info("2. Initializing Entry/Exit Counter...")
+            # 2. Initialize Dwell Time Tracker
+            self.logger.info("2. Initializing Dwell Time Tracker...")
+            dwell_config = self.config.get('dwell_time', {})
+            self.dwell_tracker = DwellTimeTracker(
+                db_path=dwell_config.get('db_path', 'data/dwell_time.db'),
+                warning_threshold=dwell_config.get('warning_threshold', 90),
+                alert_threshold=dwell_config.get('alert_threshold', 120)
+            )
+            
+            # 3. Initialize Entry/Exit Counter (with dwell tracking)
+            self.logger.info("3. Initializing Entry/Exit Counter...")
             counting_config = self.config.get('counting', {})
             self.counter = EntryExitCounter(
                 counting_line_y=counting_config.get('counting_line_y', 240),
                 frame_height=self.config['camera'].get('height', 480),
-                entry_direction=counting_config.get('entry_direction', 'down')
+                entry_direction=counting_config.get('entry_direction', 'down'),
+                dwell_tracker=self.dwell_tracker  # Pass dwell tracker
             )
             
-            # 3. Initialize Occupancy Tracker
-            self.logger.info("3. Initializing Occupancy Tracker...")
+            # 4. Initialize Occupancy Tracker
+            self.logger.info("4. Initializing Occupancy Tracker...")
             occupancy_config = self.config.get('occupancy', {})
             self.tracker = OccupancyTracker(
                 db_path=occupancy_config.get('db_path', 'data/occupancy.db'),
@@ -211,9 +223,15 @@ class BarMonitorSystem:
                 if time.time() - last_stats_time >= stats_interval:
                     stats = self.tracker.get_statistics()
                     
-                    self.logger.info("─" * 60)
+                    # Get dwell time stats
+                    dwell_stats = self.dwell_tracker.get_statistics(days=1)
+                    campers = self.dwell_tracker.get_campers()
+                    
+                    self.logger.info("═" * 60)
                     self.logger.info(f"Current Status [{datetime.now().strftime('%H:%M:%S')}]")
-                    self.logger.info(f"  Occupancy: {stats['current_occupancy']} people")
+                    self.logger.info("─" * 60)
+                    self.logger.info("OCCUPANCY:")
+                    self.logger.info(f"  Currently Inside: {stats['current_occupancy']} people")
                     self.logger.info(f"  Total Entries: {stats['total_entries']}")
                     self.logger.info(f"  Total Exits: {stats['total_exits']}")
                     self.logger.info(f"  Active Tracks: {stats['active_tracks']}")
@@ -223,6 +241,20 @@ class BarMonitorSystem:
                     self.logger.info(f"  Peak Today: {peak} people")
                     
                     self.logger.info("─" * 60)
+                    self.logger.info("DWELL TIME:")
+                    self.logger.info(f"  Active Customers: {dwell_stats['current_active']}")
+                    self.logger.info(f"  Avg Today: {dwell_stats['avg_dwell_minutes']:.1f} minutes")
+                    self.logger.info(f"  Campers (>2hr): {len(campers)}")
+                    self.logger.info(f"  Warnings (>90m): {dwell_stats['current_warnings']}")
+                    
+                    # Alert if campers present
+                    if campers:
+                        self.logger.warning(f"  ⚠️  {len(campers)} customers over 2 hours!")
+                        for session in campers[:3]:  # Show top 3
+                            dwell = session.get_current_dwell_minutes()
+                            self.logger.warning(f"     Track {session.track_id}: {dwell:.0f} minutes")
+                    
+                    self.logger.info("═" * 60)
                     
                     last_stats_time = time.time()
                 
@@ -252,6 +284,10 @@ class BarMonitorSystem:
         if self.tracker:
             self.logger.info("Stopping occupancy tracker...")
             self.tracker.stop()
+        
+        if self.dwell_tracker:
+            self.logger.info("Closing dwell time tracker...")
+            # Dwell tracker doesn't need explicit stop (auto-saves)
         
         self.logger.info("System stopped successfully")
 

@@ -22,9 +22,9 @@ PyGObject>=3.42.0
 # pyaudio>=0.2.11            # Audio input
 # pybluez>=0.23              # Bluetooth scanning
 
-# Web interface (optional - for dashboard)
-# flask>=2.0.0
-# flask-socketio>=5.0.0
+# Web interface (for dwell time dashboard)
+flask>=2.0.0
+flask-cors>=3.0.10
 
 # Utilities
 python-dateutil>=2.8.0

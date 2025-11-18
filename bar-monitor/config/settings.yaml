@@ -49,6 +49,23 @@ occupancy:
   # Maximum capacity (0 = no limit)
   max_capacity: 0
 
+# Dwell Time Tracking
+dwell_time:
+  # Enable dwell time tracking
+  enabled: true
+  
+  # Database path
+  db_path: 'data/dwell_time.db'
+  
+  # Warning threshold (minutes) - yellow alert
+  warning_threshold: 90
+  
+  # Alert threshold (minutes) - red alert
+  alert_threshold: 120
+  
+  # Target dwell time for revenue optimization (minutes)
+  target_dwell: 75
+
 # Logging
 logging:
   level: 'INFO'  # DEBUG, INFO, WARNING, ERROR
