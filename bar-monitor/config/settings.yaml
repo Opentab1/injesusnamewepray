@@ -1,0 +1,103 @@
+# Bar Monitoring System Configuration
+# Edit these settings to match your hardware setup
+
+# Camera Configuration
+camera:
+  # Source: 'rpi' for Pi Camera, 'usb' for USB camera, or '/dev/videoX' for specific device
+  source: 'rpi'
+  
+  # Resolution (Hailo works best with these standard sizes)
+  width: 640
+  height: 480
+  
+  # Frame rate (Hailo can handle 30+ FPS)
+  fps: 30
+
+# People Detection (Hailo HAT)
+detection:
+  # Model to use: 'yolov6n' (fastest), 'yolov8s' (balanced), 'yolov8m' (most accurate)
+  model: 'yolov6n'
+  
+  # Confidence threshold (0.0-1.0) - lower = more detections but more false positives
+  confidence_threshold: 0.5
+  
+  # Only detect people (class_id=1 in COCO dataset)
+  filter_classes: [1]  # 1 = person
+
+# Entry/Exit Counting
+counting:
+  # Y-coordinate of counting line in pixels (0 = top of frame)
+  # This should be at your doorway threshold
+  counting_line_y: 240  # Middle of 480px frame - ADJUST FOR YOUR DOORWAY
+  
+  # Entry direction: 'down' if entering means moving down in frame, 'up' if moving up
+  # Depends on camera placement
+  entry_direction: 'down'
+  
+  # Tracking parameters
+  max_disappeared: 30  # Frames before removing lost track (1 second at 30fps)
+  max_distance: 50     # Max pixel distance to match detections
+
+# Occupancy Tracking
+occupancy:
+  # How often to save snapshots to database (seconds)
+  snapshot_interval: 60
+  
+  # Database path
+  db_path: 'data/occupancy.db'
+  
+  # Maximum capacity (0 = no limit)
+  max_capacity: 0
+
+# Dwell Time Tracking
+dwell_time:
+  # Enable dwell time tracking
+  enabled: true
+  
+  # Database path
+  db_path: 'data/dwell_time.db'
+  
+  # Warning threshold (minutes) - yellow alert
+  warning_threshold: 90
+  
+  # Alert threshold (minutes) - red alert
+  alert_threshold: 120
+  
+  # Target dwell time for revenue optimization (minutes)
+  target_dwell: 75
+
+# Logging
+logging:
+  level: 'INFO'  # DEBUG, INFO, WARNING, ERROR
+  log_dir: 'logs'
+  log_file: 'bar-monitor.log'
+
+# Display/Visualization
+display:
+  # Show video output with detections
+  show_video: true
+  
+  # Show counting line
+  show_counting_line: true
+  
+  # Show track IDs
+  show_track_ids: true
+  
+  # Show FPS counter
+  show_fps: true
+
+# Toast POS Integration (OPTIONAL - for revenue tracking)
+toast_pos:
+  # Enable Toast POS integration
+  enabled: false
+  
+  # Toast API Credentials (get from https://developers.toasttab.com/)
+  client_id: ''  # Your Toast API Client ID
+  client_secret: ''  # Your Toast API Client Secret
+  restaurant_guid: ''  # Your Restaurant GUID
+  
+  # How often to sync orders (seconds)
+  sync_interval: 60
+  
+  # Link orders to customers within this time window (seconds)
+  order_matching_window: 300  # 5 minutes

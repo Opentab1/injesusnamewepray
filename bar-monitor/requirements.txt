@@ -1,0 +1,21 @@
+# Battle-Tested Libraries Only!
+# All code comes from these repos - we don't write custom code
+
+# Supervision (18,000 stars)
+# https://github.com/roboflow/supervision
+# Line crossing, tracking, dwell zones
+supervision>=0.16.0
+
+# Streamlit (33,000 stars)
+# https://github.com/streamlit/streamlit
+# Beautiful dashboards
+streamlit>=1.28.0
+
+# Supporting libraries
+pandas>=1.5.0          # For Streamlit charts
+opencv-python>=4.5.0   # For Supervision
+PyYAML>=6.0            # For config
+numpy>=1.21.0          # For Supervision
+
+# Hailo examples have their own install.sh
+# Run: cd ~/hailo-rpi5-examples && ./install.sh
